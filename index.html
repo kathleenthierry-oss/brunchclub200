@@ -913,6 +913,44 @@
         </div>
     </div>
 
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA73o0b_hn4j8uxBO6sQdkXLCleo8YvqJg",
+            authDomain: "brunch-club-200.firebaseapp.com",
+            projectId: "brunch-club-200",
+            storageBucket: "brunch-club-200.firebasestorage.app",
+            messagingSenderId: "457042842163",
+            appId: "1:457042842163:web:fa4911b7a1b5b203bf4946",
+            measurementId: "G-4W49XQZTPG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Expose saveReservation globally for the non-module script
+        window.saveReservation = async function(data) {
+            try {
+                const docRef = await addDoc(collection(db, "reservations"), {
+                    name: data.name,
+                    phone: data.phone,
+                    date: data.date,
+                    time: data.time,
+                    guests: parseInt(data.guests),
+                    status: "en attente",
+                    createdAt: serverTimestamp()
+                });
+                return { success: true, id: docRef.id };
+            } catch (error) {
+                console.error("Erreur Firestore:", error);
+                return { success: false, error: error.message };
+            }
+        };
+    </script>
+
     <script>
         // =====================
         // RESERVATION SYSTEM
@@ -1095,7 +1133,7 @@
         });
 
         // Submit reservation
-        submitBtn.addEventListener('click', function() {
+        submitBtn.addEventListener('click', async function() {
             if (submitBtn.disabled) return;
 
             const guests = document.getElementById('guests').value;
@@ -1107,16 +1145,43 @@
             const year = selectedDate.getFullYear();
             const dateStr = dayNum + ' ' + monthName + ' ' + year;
 
-            var detailsHTML = '<p><span>Date</span><br>' + dateStr + '</p>' +
-                '<p><span>Heure</span><br>' + selectedTime + '</p>' +
-                '<p><span>Convives</span><br>' + guests + (guests > 1 ? ' personnes' : ' personne') + '</p>' +
-                '<p><span>Nom</span><br>' + escapeHtml(name) + '</p>' +
-                '<p><span>Téléphone</span><br>' + escapeHtml(phone) + '</p>';
+            // Disable button while saving
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Envoi en cours...';
 
-            document.getElementById('confirmationDetails').innerHTML = detailsHTML;
+            // Format date as YYYY-MM-DD for Firestore
+            const dateForDb = selectedDate.getFullYear() + '-' +
+                String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(selectedDate.getDate()).padStart(2, '0');
 
-            form.style.display = 'none';
-            confirmation.classList.add('active');
+            // Save to Firestore
+            var result = { success: false };
+            if (window.saveReservation) {
+                result = await window.saveReservation({
+                    name: name,
+                    phone: phone,
+                    date: dateForDb,
+                    time: selectedTime,
+                    guests: guests
+                });
+            }
+
+            if (result.success) {
+                var detailsHTML = '<p><span>Date</span><br>' + dateStr + '</p>' +
+                    '<p><span>Heure</span><br>' + selectedTime + '</p>' +
+                    '<p><span>Convives</span><br>' + guests + (guests > 1 ? ' personnes' : ' personne') + '</p>' +
+                    '<p><span>Nom</span><br>' + escapeHtml(name) + '</p>' +
+                    '<p><span>Téléphone</span><br>' + escapeHtml(phone) + '</p>' +
+                    '<p><span>Statut</span><br>En attente de confirmation</p>';
+
+                document.getElementById('confirmationDetails').innerHTML = detailsHTML;
+                form.style.display = 'none';
+                confirmation.classList.add('active');
+            } else {
+                alert('Erreur lors de la réservation. Veuillez réessayer.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirmer la réservation';
+            }
         });
 
         function escapeHtml(text) {
