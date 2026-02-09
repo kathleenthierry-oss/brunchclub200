@@ -142,7 +142,13 @@
             text-align: center;
         }
 
-        .concept { animation: fadeInUp 1.2s ease-out 0.3s both; }
+        .concept {
+            animation: fadeInUp 1.2s ease-out 0.3s both;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            padding: 3rem 3.5rem;
+            border: 1px solid rgba(245, 241, 232, 0.08);
+        }
 
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
@@ -177,13 +183,16 @@
             font-size: 0.85rem;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            padding: 0.8rem 2rem;
+            padding: 0.8rem 2.5rem;
             border: 1px solid rgba(245, 241, 232, 0.3);
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
             transition: all 0.4s ease;
             cursor: pointer;
             text-align: center;
+            text-decoration: none;
+            color: var(--cream);
+            display: inline-block;
         }
 
         .tag:hover {
@@ -230,6 +239,93 @@
 
         .cta-button:hover::before { left: 0; }
         .cta-button:hover { color: var(--charcoal); }
+
+        /* Menu Sections */
+        .menu-section {
+            position: relative;
+            z-index: 10;
+            padding: 6rem 2rem;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(12px);
+        }
+
+        .menu-section-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .menu-section h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-section-divider {
+            width: 60px;
+            height: 1px;
+            background: var(--accent);
+            margin: 1.5rem auto;
+            opacity: 0.8;
+        }
+
+        .menu-section-desc {
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+        }
+
+        .menu-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .menu-item {
+            padding: 2rem 1.5rem;
+            border: 1px solid rgba(245, 241, 232, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .menu-item:hover {
+            border-color: rgba(245, 241, 232, 0.25);
+            transform: translateY(-4px);
+        }
+
+        .menu-item h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .menu-item p {
+            font-size: 0.75rem;
+            line-height: 1.8;
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+        }
+
+        .menu-item .price {
+            display: block;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .section-spacer {
+            position: relative;
+            z-index: 10;
+            height: 1px;
+            background: rgba(245, 241, 232, 0.08);
+        }
 
         /* Footer */
         footer {
@@ -669,9 +765,8 @@
                 <p class="concept-subtitle">Eat · Brunch · Repeat</p>
 
                 <div class="concept-tags">
-                    <span class="tag">Eat</span>
-                    <span class="tag">Brunch</span>
-                    <span class="tag">Repeat</span>
+                    <a href="#menu-section" class="tag">Menu</a>
+                    <a href="#drink-section" class="tag">Drink</a>
                 </div>
 
                 <div class="cta">
@@ -679,6 +774,55 @@
                 </div>
             </div>
         </main>
+
+        <!-- Menu Section -->
+        <section class="menu-section" id="menu-section">
+            <div class="menu-section-inner">
+                <h2>Menu</h2>
+                <div class="menu-section-divider"></div>
+                <p class="menu-section-desc">Nos classiques du brunch</p>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <h3>Pancakes</h3>
+                        <p>Pancakes moelleux servis avec du sirop d'érable, des fruits frais de saison et une touche de chantilly maison</p>
+                        <span class="price">14 &euro;</span>
+                    </div>
+                    <div class="menu-item">
+                        <h3>Toast</h3>
+                        <p>Pain de campagne toasté, avocat écrasé, oeuf poché, graines de sésame et piment d'Espelette</p>
+                        <span class="price">16 &euro;</span>
+                    </div>
+                    <div class="menu-item">
+                        <h3>Yogurt</h3>
+                        <p>Bowl de yaourt grec, granola maison aux noix, miel de lavande et fruits rouges du marché</p>
+                        <span class="price">12 &euro;</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-spacer"></div>
+
+        <!-- Drink Section -->
+        <section class="menu-section" id="drink-section">
+            <div class="menu-section-inner">
+                <h2>Drink</h2>
+                <div class="menu-section-divider"></div>
+                <p class="menu-section-desc">Pour accompagner votre brunch</p>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <h3>Brunch Cocktails</h3>
+                        <p>Mimosa classique, Bloody Mary maison, Spritz Aperol ou Bellini aux fruits frais</p>
+                        <span class="price">10 – 14 &euro;</span>
+                    </div>
+                    <div class="menu-item">
+                        <h3>Coffee &amp; Tea</h3>
+                        <p>Espresso, cappuccino, latte art, matcha latte, thé vert jasmin ou infusion du moment</p>
+                        <span class="price">4 – 7 &euro;</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Footer -->
         <footer>
@@ -980,6 +1124,20 @@
             div.appendChild(document.createTextNode(text));
             return div.innerHTML;
         }
+
+        // =====================
+        // SMOOTH SCROLL
+        // =====================
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            if (anchor.id === 'nav-reservation') return;
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
 
         // =====================
         // EXISTING ANIMATIONS
