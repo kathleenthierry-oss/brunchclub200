@@ -913,8 +913,10 @@
         </div>
     </div>
 
-    <!-- Firebase -->
     <script type="module">
+        // =====================
+        // FIREBASE
+        // =====================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
@@ -931,27 +933,19 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Expose saveReservation globally for the non-module script
-        window.saveReservation = async function(data) {
-            try {
-                const docRef = await addDoc(collection(db, "reservations"), {
-                    name: data.name,
-                    phone: data.phone,
-                    date: data.date,
-                    time: data.time,
-                    guests: parseInt(data.guests),
-                    status: "en attente",
-                    createdAt: serverTimestamp()
-                });
-                return { success: true, id: docRef.id };
-            } catch (error) {
-                console.error("Erreur Firestore:", error);
-                return { success: false, error: error.message };
-            }
-        };
-    </script>
+        async function saveReservation(data) {
+            const docRef = await addDoc(collection(db, "reservations"), {
+                name: data.name,
+                phone: data.phone,
+                date: data.date,
+                time: data.time,
+                guests: parseInt(data.guests),
+                status: "en attente",
+                createdAt: serverTimestamp()
+            });
+            return docRef.id;
+        }
 
-    <script>
         // =====================
         // RESERVATION SYSTEM
         // =====================
@@ -961,7 +955,6 @@
         ];
         const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
-        // Time slots from 9:00 to 14:30 (last arrival 30min before closing at 15:00)
         const TIME_SLOTS = [
             '9:00', '9:30', '10:00', '10:30',
             '11:00', '11:30', '12:00', '12:30',
@@ -973,7 +966,6 @@
         let selectedDate = null;
         let selectedTime = null;
 
-        // Elements
         const modal = document.getElementById('reservationModal');
         const form = document.getElementById('reservationForm');
         const confirmation = document.getElementById('confirmationView');
@@ -982,7 +974,6 @@
         const timeSlotsContainer = document.getElementById('timeSlots');
         const submitBtn = document.getElementById('submitReservation');
 
-        // Open modal
         function openModal() {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -990,7 +981,6 @@
             renderTimeSlots();
         }
 
-        // Close modal
         function closeModal() {
             modal.classList.remove('active');
             document.body.style.overflow = '';
@@ -1006,11 +996,11 @@
             form.style.display = 'block';
             confirmation.classList.remove('active');
             submitBtn.disabled = true;
+            submitBtn.textContent = 'Confirmer la réservation';
             renderCalendar();
             renderTimeSlots();
         }
 
-        // Event listeners for opening modal
         document.getElementById('cta-reservation').addEventListener('click', openModal);
         document.getElementById('nav-reservation').addEventListener('click', function(e) {
             e.preventDefault();
@@ -1019,62 +1009,42 @@
         document.getElementById('modalClose').addEventListener('click', closeModal);
         document.getElementById('closeConfirm').addEventListener('click', closeModal);
 
-        // Close on overlay click
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
         });
 
-        // Close on Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
         });
 
-        // Render Calendar
         function renderCalendar() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
             calendarTitle.textContent = MONTHS_FR[currentMonth] + ' ' + currentYear;
-
             let html = '';
-
-            // Day labels (Monday first)
             DAYS_FR.forEach(function(day) {
                 html += '<div class="calendar-day-label">' + day + '</div>';
             });
-
-            // First day of month (convert Sunday=0 to Monday=0 system)
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const startDay = firstDay === 0 ? 6 : firstDay - 1;
-
-            // Days in month
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            // Empty cells
             for (let i = 0; i < startDay; i++) {
                 html += '<button class="calendar-day empty" disabled></button>';
             }
-
-            // Day cells
             for (let d = 1; d <= daysInMonth; d++) {
                 const date = new Date(currentYear, currentMonth, d);
                 const isPast = date < today;
                 const isToday = date.getTime() === today.getTime();
                 const isSelected = selectedDate && date.getTime() === selectedDate.getTime();
-
                 let classes = 'calendar-day';
                 if (isPast) classes += ' disabled';
                 if (isToday) classes += ' today';
                 if (isSelected) classes += ' selected';
-
                 html += '<button class="' + classes + '" ' +
                     (isPast ? 'disabled' : 'data-date="' + date.toISOString() + '"') +
                     '>' + d + '</button>';
             }
-
             calendarGrid.innerHTML = html;
-
-            // Add click listeners
             calendarGrid.querySelectorAll('.calendar-day:not(.disabled):not(.empty)').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     selectedDate = new Date(this.getAttribute('data-date'));
@@ -1084,7 +1054,6 @@
             });
         }
 
-        // Navigate months
         document.getElementById('prevMonth').addEventListener('click', function() {
             const today = new Date();
             if (currentMonth === today.getMonth() && currentYear === today.getFullYear()) return;
@@ -1099,7 +1068,6 @@
             renderCalendar();
         });
 
-        // Render Time Slots
         function renderTimeSlots() {
             let html = '';
             TIME_SLOTS.forEach(function(time) {
@@ -1108,7 +1076,6 @@
                     '" data-time="' + time + '">' + time + '</button>';
             });
             timeSlotsContainer.innerHTML = html;
-
             timeSlotsContainer.querySelectorAll('.time-slot').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     selectedTime = this.getAttribute('data-time');
@@ -1118,7 +1085,6 @@
             });
         }
 
-        // Form validity
         function checkFormValidity() {
             const guests = document.getElementById('guests').value;
             const name = document.getElementById('guestName').value.trim();
@@ -1126,13 +1092,18 @@
             submitBtn.disabled = !(selectedDate && selectedTime && guests && name && phone);
         }
 
-        // Listen for input changes
         ['guests', 'guestName', 'guestPhone'].forEach(function(id) {
             document.getElementById(id).addEventListener('input', checkFormValidity);
             document.getElementById(id).addEventListener('change', checkFormValidity);
         });
 
-        // Submit reservation
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        // Submit reservation — Firebase is guaranteed available here
         submitBtn.addEventListener('click', async function() {
             if (submitBtn.disabled) return;
 
@@ -1145,28 +1116,22 @@
             const year = selectedDate.getFullYear();
             const dateStr = dayNum + ' ' + monthName + ' ' + year;
 
-            // Disable button while saving
             submitBtn.disabled = true;
             submitBtn.textContent = 'Envoi en cours...';
 
-            // Format date as YYYY-MM-DD for Firestore
             const dateForDb = selectedDate.getFullYear() + '-' +
                 String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' +
                 String(selectedDate.getDate()).padStart(2, '0');
 
-            // Save to Firestore
-            var result = { success: false };
-            if (window.saveReservation) {
-                result = await window.saveReservation({
+            try {
+                await saveReservation({
                     name: name,
                     phone: phone,
                     date: dateForDb,
                     time: selectedTime,
                     guests: guests
                 });
-            }
 
-            if (result.success) {
                 var detailsHTML = '<p><span>Date</span><br>' + dateStr + '</p>' +
                     '<p><span>Heure</span><br>' + selectedTime + '</p>' +
                     '<p><span>Convives</span><br>' + guests + (guests > 1 ? ' personnes' : ' personne') + '</p>' +
@@ -1177,18 +1142,13 @@
                 document.getElementById('confirmationDetails').innerHTML = detailsHTML;
                 form.style.display = 'none';
                 confirmation.classList.add('active');
-            } else {
+            } catch (error) {
+                console.error('Erreur réservation:', error);
                 alert('Erreur lors de la réservation. Veuillez réessayer.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Confirmer la réservation';
             }
         });
-
-        function escapeHtml(text) {
-            var div = document.createElement('div');
-            div.appendChild(document.createTextNode(text));
-            return div.innerHTML;
-        }
 
         // =====================
         // SMOOTH SCROLL
@@ -1205,10 +1165,8 @@
         });
 
         // =====================
-        // EXISTING ANIMATIONS
+        // ANIMATIONS
         // =====================
-
-        // Hide scroll indicator on scroll
         let scrollTimeout;
         window.addEventListener('scroll', function() {
             var indicator = document.querySelector('.scroll-indicator');
@@ -1221,12 +1179,15 @@
             }, 1000);
         });
 
-        // Parallax effect on hero image
         window.addEventListener('scroll', function() {
             var scrolled = window.pageYOffset;
             var heroImage = document.querySelector('.hero-image');
             heroImage.style.transform = 'scale(' + (1 + scrolled * 0.0001) + ') translateY(' + (scrolled * 0.5) + 'px)';
         });
+
+        // Init calendar
+        renderCalendar();
+        renderTimeSlots();
     </script>
 </body>
 </html>
