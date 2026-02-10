@@ -405,17 +405,28 @@
         // Remplace cette URL par ton webhook N8N (Production URL)
         const N8N_WEBHOOK_URL = 'https://thierrykt.app.n8n.cloud/webhook-test/c60ea77b-9e45-4714-9194-7cfcce3a5208';
 
+        // Format phone to E.164 (ex: 0766097079 → +33766097079)
+        function formatPhoneE164(phone) {
+            var cleaned = phone.replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+            if (cleaned.startsWith('0')) {
+                return '+33' + cleaned.substring(1);
+            }
+            if (!cleaned.startsWith('+')) {
+                return '+33' + cleaned;
+            }
+            return cleaned;
+        }
+
         // Send webhook to N8N when reservation is confirmed
         async function sendWebhook(reservation) {
             try {
                 await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    mode: 'no-cors',
                     body: JSON.stringify({
                         id: reservation.id,
                         name: reservation.name,
-                        phone: reservation.phone,
+                        phone: formatPhoneE164(reservation.phone || ''),
                         date: reservation.date,
                         time: reservation.time,
                         guests: reservation.guests,
