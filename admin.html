@@ -399,13 +399,52 @@
             return div.innerHTML;
         }
 
+        // =====================
+        // N8N WEBHOOK CONFIG
+        // =====================
+        // Remplace cette URL par ton webhook N8N (Production URL)
+        const N8N_WEBHOOK_URL = 'COLLE_TON_URL_WEBHOOK_N8N_ICI';
+
+        // Send webhook to N8N when reservation is confirmed
+        async function sendWebhook(reservation) {
+            if (N8N_WEBHOOK_URL === 'COLLE_TON_URL_WEBHOOK_N8N_ICI') {
+                console.warn('Webhook N8N non configuré. Configure N8N_WEBHOOK_URL dans admin.html');
+                return;
+            }
+            try {
+                await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        id: reservation.id,
+                        name: reservation.name,
+                        phone: reservation.phone,
+                        date: reservation.date,
+                        time: reservation.time,
+                        guests: reservation.guests,
+                        status: reservation.status
+                    })
+                });
+                console.log('Webhook N8N envoyé pour:', reservation.name);
+            } catch (err) {
+                console.error('Erreur webhook N8N:', err);
+            }
+        }
+
         // Update status
         window.updateStatus = async function(docId, newStatus) {
             try {
                 await updateDoc(doc(db, "reservations", docId), { status: newStatus });
                 // Update local data
                 var reservation = allReservations.find(function(r) { return r.id === docId; });
-                if (reservation) reservation.status = newStatus;
+                if (reservation) {
+                    reservation.status = newStatus;
+                    // Envoyer webhook N8N si confirmée
+                    if (newStatus === 'confirmée') {
+                        sendWebhook(reservation);
+                    }
+                }
                 updateStats();
                 renderTable();
             } catch (error) {
