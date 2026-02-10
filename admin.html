@@ -403,14 +403,10 @@
         // N8N WEBHOOK CONFIG
         // =====================
         // Remplace cette URL par ton webhook N8N (Production URL)
-        const N8N_WEBHOOK_URL = 'COLLE_TON_URL_WEBHOOK_N8N_ICI';
+        const N8N_WEBHOOK_URL = 'https://thierrykt.app.n8n.cloud/webhook-test/c60ea77b-9e45-4714-9194-7cfcce3a5208';
 
         // Send webhook to N8N when reservation is confirmed
         async function sendWebhook(reservation) {
-            if (N8N_WEBHOOK_URL === 'COLLE_TON_URL_WEBHOOK_N8N_ICI') {
-                console.warn('Webhook N8N non configuré. Configure N8N_WEBHOOK_URL dans admin.html');
-                return;
-            }
             try {
                 await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
