@@ -1159,7 +1159,8 @@
                 e.preventDefault();
                 var target = document.querySelector(this.getAttribute('href'));
                 if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
+                    var top = target.getBoundingClientRect().top + window.pageYOffset;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
                 }
             });
         });
